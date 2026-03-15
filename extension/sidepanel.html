@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Apply Agent</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- Header -->
+    <header>
+      <div class="header-left">
+        <span class="logo">💼</span>
+        <span class="title">Apply Agent</span>
+      </div>
+      <div class="header-right">
+        <button id="btn-settings" class="icon-btn" title="Settings">⚙</button>
+      </div>
+    </header>
+
+    <!-- Job Detection Banner -->
+    <div id="job-banner" class="job-banner hidden">
+      <div class="job-info">
+        <div id="job-title" class="job-title-text">Detected job posting</div>
+        <div id="job-company" class="job-company-text"></div>
+      </div>
+      <button id="btn-use-detected" class="btn-small btn-primary">Use this ✓</button>
+    </div>
+
+    <!-- Input area -->
+    <div id="input-section">
+      <div class="section-label">Job Posting</div>
+      <textarea
+        id="job-input"
+        placeholder="Paste a job description or URL here...&#10;&#10;Or navigate to a job board — this panel auto-detects postings on LinkedIn, Greenhouse, Lever, Workday, and more."
+        rows="8"
+      ></textarea>
+
+      <!-- Content type selector -->
+      <div class="section-label" style="margin-top: 12px;">Generate</div>
+      <div class="content-types">
+        <label class="type-checkbox">
+          <input type="checkbox" value="Cold Email (Hiring Manager)" checked> Cold Email (HM)
+        </label>
+        <label class="type-checkbox">
+          <input type="checkbox" value="Cold Email (Recruiter)" checked> Cold Email (Recruiter)
+        </label>
+        <label class="type-checkbox">
+          <input type="checkbox" value="LinkedIn Connection Request" checked> LinkedIn Connect
+        </label>
+        <label class="type-checkbox">
+          <input type="checkbox" value="LinkedIn Follow-up Message" checked> LinkedIn Follow-up
+        </label>
+        <label class="type-checkbox">
+          <input type="checkbox" value="Cover Letter" checked> Cover Letter
+        </label>
+        <label class="type-checkbox">
+          <input type="checkbox" value="Referral Request" checked> Referral Request
+        </label>
+        <label class="type-checkbox">
+          <input type="checkbox" value="Slack Message" checked> Slack Message
+        </label>
+      </div>
+
+      <div class="actions">
+        <button id="btn-select-all" class="btn-small btn-ghost">All</button>
+        <button id="btn-select-none" class="btn-small btn-ghost">None</button>
+        <button id="btn-generate" class="btn-primary btn-generate">✨ Generate</button>
+      </div>
+    </div>
+
+    <!-- Loading state -->
+    <div id="loading-section" class="hidden">
+      <div class="loading-indicator">
+        <div class="spinner"></div>
+        <span>Generating tailored content...</span>
+      </div>
+      <div id="stream-preview" class="stream-preview"></div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-section" class="hidden">
+      <div class="results-header">
+        <span class="results-title">Generated Content</span>
+        <button id="btn-regenerate" class="btn-small btn-ghost">↺ Redo</button>
+      </div>
+      <div id="results-container"></div>
+    </div>
+
+    <!-- Error state -->
+    <div id="error-section" class="hidden">
+      <div class="error-box">
+        <div class="error-icon">⚠</div>
+        <div id="error-message">Something went wrong.</div>
+        <button id="btn-retry" class="btn-small btn-primary">Try Again</button>
+      </div>
+    </div>
+
+    <!-- Setup prompt (no API key) -->
+    <div id="setup-section" class="hidden">
+      <div class="setup-box">
+        <div class="setup-icon">🔑</div>
+        <div class="setup-text">Add your Anthropic API key to get started.</div>
+        <button id="btn-open-settings" class="btn-primary">Open Settings</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="sidepanel.js"></script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Profile files — these contain YOUR personal data (resume, stories, preferences)
+# Do NOT commit these. Fill them in locally.
+profile/resume.md
+profile/stories.md
+profile/preferences.md
+
+# Example outputs may contain personal info
+examples/example-outputs.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+*.swp

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Job Apply Agent — Settings</title>
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --border: #2e2e3d;
+      --text: #e8e8f0;
+      --text-muted: #7070a0;
+      --accent: #7c6af7;
+      --accent-hover: #9180ff;
+      --success: #4ade80;
+      --error: #f87171;
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      padding: 40px 0;
+    }
+
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      margin-bottom: 40px;
+    }
+
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .section-desc {
+      color: var(--text-muted);
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+
+    .field { margin-bottom: 16px; }
+
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input[type="password"],
+    input[type="text"],
+    select,
+    textarea {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 9px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+    }
+
+    textarea {
+      resize: vertical;
+      font-family: 'Cascadia Code', 'Consolas', monospace;
+      font-size: 12px;
+      min-height: 120px;
+    }
+
+    .file-upload-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input[type="file"] {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 12px;
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .status-dot.ok { background: var(--success); }
+    .status-dot.warn { background: #fbbf24; }
+
+    .btn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 22px;
+      transition: background 0.15s;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 7px 14px;
+      font-weight: 500;
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+
+    .save-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    #save-status {
+      font-size: 12px;
+      color: var(--success);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    #save-status.visible { opacity: 1; }
+
+    .profile-status {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .profile-status-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px 12px;
+    }
+
+    .tip {
+      background: rgba(124, 106, 247, 0.08);
+      border: 1px solid rgba(124, 106, 247, 0.2);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>💼 Job Apply Agent Settings</h1>
+    <p class="subtitle">Configure your API key and import your profile files.</p>
+
+    <!-- API Key -->
+    <div class="section">
+      <div class="section-title">Anthropic API Key</div>
+      <div class="section-desc">Required to generate content. Get yours at console.anthropic.com.</div>
+      <div class="field">
+        <label>API Key</label>
+        <input type="password" id="api-key" placeholder="sk-ant-..." autocomplete="off">
+      </div>
+      <div class="field">
+        <label>Model</label>
+        <select id="model">
+          <option value="claude-sonnet-4-6">claude-sonnet-4-6 (recommended — fast + great quality)</option>
+          <option value="claude-opus-4-6">claude-opus-4-6 (best quality, slower)</option>
+          <option value="claude-haiku-4-5-20251001">claude-haiku-4-5-20251001 (fastest, lighter quality)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Profile Import -->
+    <div class="section">
+      <div class="section-title">Your Profile</div>
+      <div class="section-desc">
+        Import your profile files. These are read by the AI on every generation.
+        Edit them at <code>~/.claude/skills/apply/profile/</code> and re-import after changes.
+      </div>
+
+      <div class="profile-status" id="profile-status">
+        <div class="profile-status-item"><div class="status-dot" id="dot-resume"></div><span>resume.md</span></div>
+        <div class="profile-status-item"><div class="status-dot" id="dot-stories"></div><span>stories.md</span></div>
+        <div class="profile-status-item"><div class="status-dot" id="dot-prefs"></div><span>preferences.md</span></div>
+      </div>
+
+      <div class="field">
+        <label>Resume (resume.md)</label>
+        <div class="file-upload-row">
+          <input type="file" id="file-resume" accept=".md,.txt">
+          <button class="btn btn-ghost" onclick="clearFile('resume')">Clear</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Professional Stories (stories.md)</label>
+        <div class="file-upload-row">
+          <input type="file" id="file-stories" accept=".md,.txt">
+          <button class="btn btn-ghost" onclick="clearFile('stories')">Clear</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Preferences (preferences.md)</label>
+        <div class="file-upload-row">
+          <input type="file" id="file-preferences" accept=".md,.txt">
+          <button class="btn btn-ghost" onclick="clearFile('preferences')">Clear</button>
+        </div>
+      </div>
+
+      <div class="tip">
+        💡 The template files (cold-email, cover-letter, etc.) are bundled with the extension
+        and don't need to be imported. Only your personal profile files need to be uploaded.
+      </div>
+    </div>
+
+    <!-- Save -->
+    <div class="save-row">
+      <button class="btn" id="btn-save">Save Settings</button>
+      <span id="save-status">✓ Saved</span>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>
