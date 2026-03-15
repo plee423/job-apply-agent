@@ -4,6 +4,47 @@ All major changes to the Job Apply Agent are recorded here.
 
 ---
 
+## [v1.4.0] - 2026-03-15
+
+### Fixed
+- `streamlit/app.py`: Resolved persistent "command line too long" error on Windows.
+- **Why previous attempts failed:**
+  - v1.2 used `-p "prompt"` directly -- hit Windows' 8191-char CLI limit.
+  - v1.3 used PowerShell `$p = Get-Content file; claude -p $p` -- looked safe but PowerShell still passes `$p` as a CLI argument when forking the child process, hitting the same limit.
+- **Fix chosen:** `cmd /c "claude.cmd -p - < prompt.txt"` -- cmd.exe stdin redirection pipes the file into claude's stdin before the process starts. The prompt never appears on any command line.
+
+### Added
+- `CLAUDE.md`: Project rules file. Enforces that every major change must be logged in CHANGELOG before committing.
+
+---
+
+## [v1.3.0] - 2026-03-15
+
+### Added
+- `streamlit/app.py`: URL input field -- paste a job posting URL to auto-fetch and parse the job content.
+- Site-specific extractors for Greenhouse, Lever, Workday, Ashby, Wellfound. Generic BeautifulSoup fallback for all other job boards.
+- Clear error message when LinkedIn URL is detected (LinkedIn blocks scraping).
+- Paste-text fallback field retained for when no URL is available.
+- `streamlit/requirements.txt`: Added `requests>=2.31` and `beautifulsoup4>=4.12`.
+
+### Fixed
+- `streamlit/app.py`: Switched from Anthropic SDK to PowerShell + temp file to route around Windows CLI length limit. (Later superseded by v1.4.0 fix.)
+
+---
+
+## [v1.2.0] - 2026-03-15
+
+### Changed
+- `streamlit/app.py`: Removed Anthropic SDK and API key requirement entirely.
+- App now calls the `claude` CLI via subprocess, using the user's existing Claude Pro OAuth session.
+- Sidebar shows Claude CLI connection status instead of API key input.
+- `streamlit/requirements.txt`: Removed `anthropic` dependency -- only `streamlit` required.
+
+### Fixed
+- `streamlit/app.py`: `st.success(..., icon="✓")` crashed because Streamlit only accepts emoji characters in the `icon` parameter. Removed the `icon` argument.
+
+---
+
 ## [v1.1.0] - 2026-03-14
 
 ### Changed

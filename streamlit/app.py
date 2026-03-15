@@ -188,11 +188,14 @@ def run_claude(prompt: str) -> tuple[str, str | None]:
 
     win_path = tmp_path.replace("/", "\\")
     claude_win = CLAUDE_CMD.replace("/", "\\")
-    ps_script = f"$p = Get-Content '{win_path}' -Raw; & '{claude_win}' --output-format text -p $p"
+
+    # cmd.exe stdin redirection: prompt is piped from file, never passed as a
+    # CLI argument -- avoids Windows' 8191-char command line limit.
+    cmd_str = f'"{claude_win}" --output-format text -p - < "{win_path}"'
 
     try:
         process = subprocess.Popen(
-            ["powershell", "-NoProfile", "-Command", ps_script],
+            ["cmd", "/c", cmd_str],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
