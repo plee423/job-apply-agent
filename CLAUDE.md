@@ -17,3 +17,14 @@ Each entry must include:
 - What approach was chosen and why
 
 This applies to all changes: code fixes, prompt updates, dependency changes, infrastructure decisions.
+
+## Error and Fix Communication Rule
+
+**Before suggesting or applying any fix, always explain:**
+1. What the error is
+2. The root cause of the error
+3. The exact change being made
+4. Why the fix works
+5. What impact it will have on the app
+
+Do not apply any fix without this explanation first. Wait for user approval before proceeding.

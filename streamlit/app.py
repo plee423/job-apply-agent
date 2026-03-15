@@ -186,8 +186,22 @@ def run_claude(prompt: str) -> tuple[str, str | None]:
         tmp.write(prompt)
         tmp_path = tmp.name
 
-    win_path = tmp_path.replace("/", "\\")
-    claude_win = CLAUDE_CMD.replace("/", "\\")
+    # Convert Unix-style paths (from Git Bash) to proper Windows paths for cmd.exe.
+    # e.g. /c/Users/... -> C:\Users\...
+    def to_win_path(p: str) -> str:
+        try:
+            result = subprocess.run(["cygpath", "-w", p], capture_output=True, text=True)
+            if result.returncode == 0:
+                return result.stdout.strip()
+        except FileNotFoundError:
+            pass
+        # Fallback: manual conversion for /c/Users/... style paths
+        if len(p) > 2 and p[0] == "/" and p[2] == "/":
+            return p[1].upper() + ":\\" + p[3:].replace("/", "\\")
+        return p.replace("/", "\\")
+
+    win_path = to_win_path(tmp_path)
+    claude_win = to_win_path(CLAUDE_CMD)
 
     # cmd.exe stdin redirection: prompt is piped from file, never passed as a
     # CLI argument -- avoids Windows' 8191-char command line limit.

@@ -4,6 +4,18 @@ All major changes to the Job Apply Agent are recorded here.
 
 ---
 
+## [v1.5.0] - 2026-03-15
+
+### Fixed
+- `streamlit/app.py`: "Filename, directory name, or volume label syntax is incorrect" from cmd.exe.
+- **Root cause:** Python's `tempfile` returns Unix-style paths (`/c/Users/...`) in the Git Bash environment. The previous `.replace("/", "\\")` produced `\c\Users\...` instead of `C:\Users\...`, which cmd.exe rejected as an invalid path.
+- **Fix:** Added `to_win_path()` helper that calls `cygpath -w` (Git Bash utility) to correctly convert Unix paths to Windows paths. Manual fallback handles the `/x/...` -> `X:\...` pattern if `cygpath` is unavailable.
+
+### Added
+- `CLAUDE.md`: Added "Error and Fix Communication Rule" -- every error must be explained (root cause, fix, why it works, impact) and approved before applying.
+
+---
+
 ## [v1.4.0] - 2026-03-15
 
 ### Fixed
