@@ -1,6 +1,7 @@
 import streamlit as st
-import anthropic
+import subprocess
 import os
+import shutil
 from pathlib import Path
 
 PROFILE_DIR = Path.home() / ".claude" / "skills" / "apply" / "profile"
@@ -64,7 +65,7 @@ def load_templates():
         "slack": read_file(TEMPLATES_DIR / "slack-message.md"),
     }
 
-def build_system_prompt(profiles: dict, templates: dict) -> str:
+def build_prompt(profiles: dict, templates: dict, selected_types: list, job_input: str) -> str:
     return f"""You are a world-class career coach and copywriter. Generate hyper-personalized job application content.
 
 === CANDIDATE RESUME ===
@@ -94,19 +95,27 @@ def build_system_prompt(profiles: dict, templates: dict) -> str:
 {templates['slack']}
 
 === INSTRUCTIONS ===
-When given a job posting:
+Generate the following content types for this job posting: {', '.join(selected_types)}
+
 1. Extract: company name, role title, key requirements, culture signals, pain points being solved.
 2. Match the candidate's most relevant experience and stories to the role's requirements.
-3. Generate ONLY the content types requested by the user.
+3. Generate ONLY the content types listed above.
 4. Follow each template's structure and constraints exactly.
-5. Every piece of content must be specific to THIS company and role — never generic.
+5. Every piece of content must be specific to THIS company and role -- never generic.
 6. Include at least one concrete metric per piece of content.
 7. Never use "I'm passionate about", "I came across your posting", or any generic opener.
-8. Format each content type clearly with a header line like:
-   ═══ COLD EMAIL (TO HIRING MANAGER) ═══
+8. Never use em dashes -- use a comma, period, or rewrite instead.
+9. Format each content type clearly with a header line like:
+   === COLD EMAIL (TO HIRING MANAGER) ===
    [content]
-   ═══ END ═══
-9. After all content, add 2-3 bullets explaining the strategic choices made for this specific application."""
+   === END ===
+10. After all content, add 2-3 bullets explaining the strategic choices made for this specific application.
+
+JOB POSTING:
+{job_input.strip()}"""
+
+def check_claude_cli() -> bool:
+    return shutil.which("claude") is not None
 
 CONTENT_TYPES = {
     "Cold Email (Hiring Manager)": "cold_email_hm",
@@ -118,29 +127,19 @@ CONTENT_TYPES = {
     "Slack Message": "slack",
 }
 
+claude_available = check_claude_cli()
+
 # Sidebar
 with st.sidebar:
     st.title("💼 Job Apply Agent")
     st.markdown("---")
 
-    api_key = st.text_input(
-        "Anthropic API Key",
-        type="password",
-        help="Get yours at console.anthropic.com",
-        placeholder="sk-ant-..."
-    )
-
-    if api_key:
-        st.success("API key set", icon="✓")
-
-    st.markdown("---")
-
-    model = st.selectbox(
-        "Model",
-        ["claude-sonnet-4-6", "claude-opus-4-6", "claude-haiku-4-5-20251001"],
-        index=0,
-        help="Sonnet = fast + great quality. Opus = best quality, slower."
-    )
+    if claude_available:
+        st.success("Claude CLI connected")
+        st.caption("Using your Claude Pro account via OAuth -- no API key needed.")
+    else:
+        st.error("Claude CLI not found")
+        st.caption("Make sure Claude Code is installed and you are logged in.")
 
     st.markdown("---")
     st.markdown("**Profile Status**")
@@ -149,11 +148,11 @@ with st.sidebar:
         path = PROFILE_DIR / filename
         has_placeholder = "[Your Full Name]" in path.read_text(encoding="utf-8") if path.exists() else False
         if not path.exists():
-            st.error(f"❌ {label}: not found")
+            st.error(f"Missing: {label}")
         elif has_placeholder:
-            st.warning(f"⚠ {label}: needs filling in")
+            st.warning(f"Needs filling in: {label}")
         else:
-            st.success(f"✓ {label}: ready")
+            st.success(f"Ready: {label}")
 
     st.markdown("---")
     if st.button("Open Profile Files", use_container_width=True):
@@ -161,14 +160,14 @@ with st.sidebar:
 
 # Main area
 st.title("Generate Job Application Content")
-st.markdown("Paste a job description or URL below, select what to generate, and click **Generate**.")
+st.markdown("Paste a job description below, select what to generate, and click **Generate**.")
 
 col1, col2 = st.columns([2, 1])
 
 with col1:
     job_input = st.text_area(
         "Job Posting",
-        placeholder="Paste the full job description here, or paste the job URL...\n\nTip: include the company name, role title, and requirements for best results.",
+        placeholder="Paste the full job description here...\n\nTip: include the company name, role title, and requirements for best results.",
         height=300,
         help="Paste the full job description. The more detail, the better the output."
     )
@@ -180,10 +179,15 @@ with col2:
         selected[label] = st.checkbox(label, value=True)
 
     st.markdown("---")
-    generate_btn = st.button("Generate ✨", type="primary", use_container_width=True, disabled=not api_key)
+    generate_btn = st.button(
+        "Generate",
+        type="primary",
+        use_container_width=True,
+        disabled=not claude_available
+    )
 
-    if not api_key:
-        st.caption("Add your API key in the sidebar to enable generation.")
+    if not claude_available:
+        st.caption("Claude CLI not found. Install Claude Code and log in.")
 
 # Generation
 if generate_btn and job_input.strip():
@@ -195,48 +199,51 @@ if generate_btn and job_input.strip():
 
     profiles = load_profiles()
     templates = load_templates()
-    system_prompt = build_system_prompt(profiles, templates)
-
-    user_message = f"""Generate the following content types for this job posting:
-{', '.join(selected_types)}
-
-JOB POSTING:
-{job_input.strip()}"""
+    prompt = build_prompt(profiles, templates, selected_types, job_input)
 
     st.markdown("---")
     st.markdown("### Generated Content")
-    st.caption("Content streams in real-time. Use the copy buttons after generation completes.")
+    st.caption("Generating via Claude CLI...")
 
     output_placeholder = st.empty()
     full_response = ""
 
     try:
-        client = anthropic.Anthropic(api_key=api_key)
+        process = subprocess.Popen(
+            ["claude", "-p", prompt, "--output-format", "text"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace"
+        )
 
-        with client.messages.stream(
-            model=model,
-            max_tokens=4096,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_message}]
-        ) as stream:
-            for text in stream.text_stream:
-                full_response += text
-                output_placeholder.markdown(full_response + "▌")
+        for line in process.stdout:
+            full_response += line
+            output_placeholder.markdown(full_response + "...")
+
+        process.wait()
+
+        if process.returncode != 0:
+            err = process.stderr.read()
+            st.error(f"Claude CLI error: {err}")
+            st.stop()
 
         output_placeholder.empty()
 
-        # Parse and display sections
+        # Parse sections
         sections = []
         current_section = None
         current_content = []
 
         for line in full_response.split('\n'):
-            if line.startswith('═══') and 'END' not in line:
+            stripped = line.strip()
+            if stripped.startswith('===') and 'END' not in stripped:
                 if current_section and current_content:
                     sections.append((current_section, '\n'.join(current_content).strip()))
-                current_section = line.replace('═══', '').strip()
+                current_section = stripped.replace('===', '').strip()
                 current_content = []
-            elif line.startswith('═══') and 'END' in line:
+            elif stripped.startswith('===') and 'END' in stripped:
                 if current_section and current_content:
                     sections.append((current_section, '\n'.join(current_content).strip()))
                 current_section = None
@@ -245,10 +252,9 @@ JOB POSTING:
                 if current_section is not None:
                     current_content.append(line)
 
-        # If parsing worked, show structured output
         if sections:
             for title, content in sections:
-                with st.expander(f"📋 {title}", expanded=True):
+                with st.expander(f"  {title}", expanded=True):
                     st.text_area(
                         label="",
                         value=content,
@@ -257,17 +263,14 @@ JOB POSTING:
                         help="Click in the box and Ctrl+A, Ctrl+C to copy all"
                     )
         else:
-            # Fallback: show raw output in a copyable box
             st.text_area("Full Output", value=full_response, height=600, help="Select all and copy")
 
-        st.success("Done! Click inside any text box, press Ctrl+A then Ctrl+C to copy.")
+        st.success("Done. Click inside any text box and press Ctrl+A then Ctrl+C to copy.")
 
-    except anthropic.AuthenticationError:
-        st.error("Invalid API key. Check your key in the sidebar.")
-    except anthropic.RateLimitError:
-        st.error("Rate limit hit. Wait a moment and try again.")
+    except FileNotFoundError:
+        st.error("Claude CLI not found. Make sure Claude Code is installed.")
     except Exception as e:
         st.error(f"Error: {e}")
 
 elif generate_btn and not job_input.strip():
-    st.warning("Paste a job description or URL first.")
+    st.warning("Paste a job description first.")
