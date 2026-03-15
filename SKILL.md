@@ -89,9 +89,10 @@ Then ask: "Want me to adjust the tone, length, or angle on any of these? Or gene
 
 ## Rules to Always Follow
 
-- Never use "I'm passionate about..." — show passion through specificity
-- Never be generic — every sentence must be specific to this company/role
+- Never use "I'm passionate about..." -- show passion through specificity
+- Never be generic -- every sentence must be specific to this company/role
 - Never exceed the length constraints in the templates
 - Always include at least one concrete metric or accomplishment
 - Always end with a clear, low-friction call to action
 - Match the user's stated tone from preferences.md exactly
+- Never use em dashes (--) in any generated content -- use a comma, period, or rewrite the sentence instead
